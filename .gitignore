@@ -1,0 +1,15 @@
+/target
+**/*.rs.bk
+
+# profiling
+flamegraph.svg
+perf.*
+
+# debugger
+.vscode
+
+# misc
+/logs
+config.json
+config.json.bak
+notices.txt

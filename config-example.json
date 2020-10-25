@@ -1,0 +1,10 @@
+{
+  "nickname": "",
+  "oauth": "oauth:",
+  "server": "irc.chat.twitch.tv",
+  "postgres": "postgres://username:password@localhost:5432",
+  "admins": [],
+  "channels": [
+    "#dansgaming"
+  ]
+}

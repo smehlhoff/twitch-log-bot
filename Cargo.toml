@@ -1,0 +1,17 @@
+[package]
+name = "twitch-log-bot"
+version = "0.1.0"
+authors = ["smehlhoff"]
+edition = "2018"
+
+[dependencies]
+chrono = "0.4.19"
+indicatif = "0.15.0"
+irc = "0.13.6"
+lazy_static = "1.4.0"
+postgres = { version = "0.18.1", features = ["with-chrono-0_4"] }
+regex = "1.4.1"
+serde = "1.0.117"
+serde_derive = "1.0.117"
+serde_json = "1.0.59"
+timeago = "0.2.1"
