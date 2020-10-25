@@ -146,8 +146,6 @@ impl Message {
         }
 
         if let Some(data) = RE.captures(&raw_msg.to_string()) {
-            println!("{}", raw_msg);
-
             let user_msg = data.get(10).map_or("", |x| x.as_str());
 
             #[allow(clippy::trivial_regex)]
