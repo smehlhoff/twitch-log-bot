@@ -14,7 +14,7 @@ pub struct BotState {
 impl BotState {
     pub fn new(count: usize) -> Self {
         let buffer = {
-            if count < 10 {
+            if count <= 10 {
                 100
             } else {
                 count * 10
