@@ -43,11 +43,11 @@ Use whisper commands to interact with the bot:
     /w <nickname> unpause
     /w <nickname> shutdown
 
-Note: The `buffer` command sets the buffer capacity for `BufWriter<W>`, while also declaring how many messages to send for each `postgres` transaction. The bot handles the buffer value dynamically and will also set a default value based on how many channels are listed in the `config.json` file. However, it may be necessary to increase this value for higher throughput channels.
+Note: The `buffer` command sets the buffer capacity for `BufWriter<W>`, while also declaring how many messages to send for each `postgres` transaction. The bot handles this value dynamically and will also set a default value based on how many channels are listed in the `config.json` file. However, it may be necessary to increase this value if you're logging multiple channels with high throughput.
 
 ## Limitations
 
-In theory, the bot can join an infinite number of channels. However, twitch.tv will disconnect the bot when the number of messages in queue to be sent is too large.
+In theory, the bot can join an infinite number of channels. However, twitch.tv will disconnect the bot when the number of messages in the queue is too large. In other words, you should be able to log 90 channels or so before having issues. This could be fixed with sharding, but that's beyond the scope of this project.
 
 ## Contributing
 
