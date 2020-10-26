@@ -38,9 +38,12 @@ Use whisper commands to interact with the bot:
     /w <nickname> part #channel
     /w <nickname> list
     /w <nickname> uptime
+    /w <nickname> buffer <int>
     /w <nickname> pause
     /w <nickname> unpause
     /w <nickname> shutdown
+
+Note: The `buffer` command sets the buffer capacity for `BufWriter<W>`, while also declaring how many messages to send for each `postgres` transaction. The bot handles the buffer value dynamically and will also set a default value based on how many channels are listed in the `config.json` file. However, it may be necessary to increase this value for higher throughput channels.
 
 ## Limitations
 

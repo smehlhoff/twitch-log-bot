@@ -4,15 +4,24 @@ use std::io::{BufWriter, Write};
 
 use crate::lib::error;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct BotState {
+    pub buffer: usize,
     pub paused: bool,
     pub uptime: chrono::DateTime<Utc>,
 }
 
 impl BotState {
-    pub fn new() -> Self {
-        Self { paused: false, uptime: Utc::now() }
+    pub fn new(count: usize) -> Self {
+        let buffer = {
+            if count < 10 {
+                100
+            } else {
+                count * 10
+            }
+        };
+
+        Self { buffer, paused: false, uptime: Utc::now() }
     }
 }
 

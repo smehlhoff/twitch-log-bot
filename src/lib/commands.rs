@@ -43,17 +43,21 @@ pub fn parse_cmd(
         match sub_cmd.as_str() {
             "join" => {
                 args.remove(0);
-                join(client, config, &parsed_msg.username, args)?;
+                join(client, bot_state, config, &parsed_msg.username, args)?;
             }
             "part" | "leave" => {
                 args.remove(0);
-                part(client, config, &parsed_msg.username, args)?;
+                part(client, bot_state, config, &parsed_msg.username, args)?;
             }
             "list" | "channels" => {
                 list(client, config, &parsed_msg.username)?;
             }
-            "uptime" => {
+            "uptime" | "status" => {
                 uptime(client, &bot_state, &config, &parsed_msg.username)?;
+            }
+            "buffer" => {
+                args.remove(0);
+                buffer(client, bot_state, &config, &parsed_msg.username, args)?;
             }
             "pause" | "stop" | "unpause" | "start" => {
                 pause(client, bot_state, &config, &parsed_msg.username, sub_cmd)?;
@@ -70,6 +74,7 @@ pub fn parse_cmd(
 
 fn join(
     client: &irc::client::IrcClient,
+    mut bot_state: std::sync::MutexGuard<config::BotState>,
     mut config: config::BotConfig,
     admin: &str,
     channels: Vec<String>,
@@ -82,7 +87,8 @@ fn join(
     for channel in &channels {
         if !config.channels.contains(channel) {
             v.push(channel.to_string());
-            config.channels.push(channel.to_string())
+            config.channels.push(channel.to_string());
+            bot_state.buffer += 10;
         }
         thread::sleep(time::Duration::from_millis(320));
     }
@@ -104,6 +110,7 @@ fn join(
 
 fn part(
     client: &irc::client::IrcClient,
+    mut bot_state: std::sync::MutexGuard<config::BotState>,
     mut config: config::BotConfig,
     admin: &str,
     channels: Vec<String>,
@@ -114,7 +121,8 @@ fn part(
     for channel in &channels {
         if config.channels.contains(channel) && client.send_join(channel).is_ok() {
             v.push(channel.to_string());
-            config.channels.retain(|x| x != channel)
+            config.channels.retain(|x| x != channel);
+            bot_state.buffer -= 10;
         }
     }
 
@@ -201,7 +209,28 @@ fn uptime(
     let uptime = formatter.convert_chrono(start_time, current_time);
 
     client.send(Command::Raw(
-        format!("PRIVMSG {} :/w {} Bot uptime: {}", config.nickname, admin, uptime),
+        format!(
+            "PRIVMSG {} :/w {} Bot uptime: {} | Bot buffer: {}",
+            config.nickname, admin, uptime, bot_state.buffer
+        ),
+        vec![],
+        None,
+    ))?;
+
+    Ok(())
+}
+
+fn buffer(
+    client: &irc::client::IrcClient,
+    mut bot_state: std::sync::MutexGuard<config::BotState>,
+    config: &config::BotConfig,
+    admin: &str,
+    args: Vec<String>,
+) -> Result<(), error::Error> {
+    bot_state.buffer = args[0].parse::<usize>().unwrap();
+
+    client.send(Command::Raw(
+        format!("PRIVMSG {} :/w {} Bot buffer set to {}", config.nickname, admin, bot_state.buffer),
         vec![],
         None,
     ))?;
