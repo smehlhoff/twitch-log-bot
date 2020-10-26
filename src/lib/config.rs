@@ -8,11 +8,12 @@ use crate::lib::error;
 pub struct BotState {
     pub buffer: usize,
     pub paused: bool,
+    pub postgres: bool,
     pub uptime: chrono::DateTime<Utc>,
 }
 
 impl BotState {
-    pub fn new(count: usize) -> Self {
+    pub fn new(count: usize, postgres: bool) -> Self {
         let buffer = {
             if count <= 10 {
                 100
@@ -21,7 +22,7 @@ impl BotState {
             }
         };
 
-        Self { buffer, paused: false, uptime: Utc::now() }
+        Self { buffer, paused: false, postgres, uptime: Utc::now() }
     }
 }
 

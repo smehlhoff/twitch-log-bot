@@ -29,7 +29,7 @@ pub fn parse_cmd(
 
     file::Logger::save_admin_txt(parsed_msg)?;
 
-    if !config.postgres.is_empty() {
+    if bot_state.postgres {
         match db::insert_admin_log(parsed_msg.to_owned()) {
             Ok(_) => {}
             Err(e) => eprintln!("{}", e),

@@ -35,13 +35,19 @@ fn run() -> Result<(), lib::error::Error> {
 
     file::create_dirs(&config.channels).expect("Unable to create log directories");
 
-    if !config.postgres.is_empty() {
-        match db::create_tables() {
-            Ok(_) => {}
-            Err(e) => eprintln!("{}", e),
+    let postgres = {
+        if !config.postgres.is_empty() {
+            match db::create_tables() {
+                Ok(_) => true,
+                Err(e) => {
+                    eprintln!("Logging to database is not enabled: {}", e);
+                    false
+                }
+            }
+        } else {
+            false
         }
     };
-
     let mut reactor = IrcReactor::new()?;
     let client = reactor.prepare_client_and_connect(&Config {
         nickname: Some(config.nickname.to_owned()),
@@ -49,7 +55,7 @@ fn run() -> Result<(), lib::error::Error> {
         ..Config::default()
     })?;
     let count = config.channels.iter().count();
-    let mutex_guard = Arc::new(Mutex::new(config::BotState::new(count)));
+    let bot_state = Arc::new(Mutex::new(config::BotState::new(count, postgres)));
     let v = Arc::new(Mutex::new(Vec::new()));
 
     client.send(Command::Raw("PASS".to_owned(), vec![config.oauth.to_owned()], None))?;
@@ -71,7 +77,7 @@ fn run() -> Result<(), lib::error::Error> {
 
     reactor.register_client_with_handler(client, move |client, raw_msg| {
         let parsed_msg = message::Message::parse_msg(&raw_msg).expect("Unable to parse message");
-        let bot_state = mutex_guard.lock().expect("Unable to acquire bot state mutex");
+        let bot_state = bot_state.lock().expect("Unable to acquire bot state mutex");
         let mut v = v.lock().expect("Unable to acquire channel mutex");
 
         if !parsed_msg.command.is_empty() {
@@ -82,7 +88,7 @@ fn run() -> Result<(), lib::error::Error> {
                 file::Logger::save_msg_txt(&parsed_msg, bot_state.buffer)
                     .expect("Unable to save message");
 
-                if !config.postgres.is_empty() {
+                if bot_state.postgres {
                     v.push(parsed_msg);
 
                     if v.len() >= bot_state.buffer {
