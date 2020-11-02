@@ -74,6 +74,8 @@ pub fn insert_logs(logs: std::vec::Vec<message::Message>) -> Result<(), error::E
 
         transaction.commit()?;
 
+        db.close()?;
+
         Ok(())
     });
 
