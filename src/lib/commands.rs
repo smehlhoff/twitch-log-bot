@@ -22,10 +22,10 @@ fn format_channels(channels: Vec<String>) -> String {
 
 pub fn parse_cmd(
     client: &irc::client::IrcClient,
-    bot_state: std::sync::MutexGuard<config::BotState>,
+    bot_state: std::sync::MutexGuard<config::State>,
     parsed_msg: &message::Message,
 ) -> Result<(), error::Error> {
-    let config = config::BotConfig::load()?;
+    let config = config::Config::load()?;
 
     file::Logger::save_admin_txt(parsed_msg)?;
 
@@ -74,8 +74,8 @@ pub fn parse_cmd(
 
 fn join(
     client: &irc::client::IrcClient,
-    mut bot_state: std::sync::MutexGuard<config::BotState>,
-    mut config: config::BotConfig,
+    mut bot_state: std::sync::MutexGuard<config::State>,
+    mut config: config::Config,
     admin: &str,
     channels: Vec<String>,
 ) -> Result<(), error::Error> {
@@ -103,15 +103,15 @@ fn join(
         ))?;
     }
 
-    config::BotConfig::update(config)?;
+    config::Config::update(config)?;
 
     Ok(())
 }
 
 fn part(
     client: &irc::client::IrcClient,
-    mut bot_state: std::sync::MutexGuard<config::BotState>,
-    mut config: config::BotConfig,
+    mut bot_state: std::sync::MutexGuard<config::State>,
+    mut config: config::Config,
     admin: &str,
     channels: Vec<String>,
 ) -> Result<(), error::Error> {
@@ -134,14 +134,14 @@ fn part(
         ))?;
     }
 
-    config::BotConfig::update(config)?;
+    config::Config::update(config)?;
 
     Ok(())
 }
 
 fn list(
     client: &irc::client::IrcClient,
-    config: config::BotConfig,
+    config: config::Config,
     admin: &str,
 ) -> Result<(), error::Error> {
     let count = config.channels.iter().count();
@@ -195,8 +195,8 @@ fn list(
 
 fn uptime(
     client: &irc::client::IrcClient,
-    bot_state: &config::BotState,
-    config: &config::BotConfig,
+    bot_state: &config::State,
+    config: &config::Config,
     admin: &str,
 ) -> Result<(), error::Error> {
     let current_time = Utc::now();
@@ -222,26 +222,50 @@ fn uptime(
 
 fn buffer(
     client: &irc::client::IrcClient,
-    mut bot_state: std::sync::MutexGuard<config::BotState>,
-    config: &config::BotConfig,
+    mut bot_state: std::sync::MutexGuard<config::State>,
+    config: &config::Config,
     admin: &str,
     args: Vec<String>,
 ) -> Result<(), error::Error> {
-    bot_state.buffer = args[0].parse::<usize>().unwrap();
-
-    client.send(Command::Raw(
-        format!("PRIVMSG {} :/w {} Bot buffer set to {}", config.nickname, admin, bot_state.buffer),
-        vec![],
-        None,
-    ))?;
+    if args.is_empty() {
+        client.send(Command::Raw(
+            format!("PRIVMSG {} :/w {} An integer value is required", config.nickname, admin),
+            vec![],
+            None,
+        ))?;
+    } else {
+        match args[0].parse::<usize>() {
+            Ok(val) => {
+                bot_state.buffer = val;
+                client.send(Command::Raw(
+                    format!(
+                        "PRIVMSG {} :/w {} Bot buffer set to {}",
+                        config.nickname, admin, bot_state.buffer
+                    ),
+                    vec![],
+                    None,
+                ))?;
+            }
+            Err(_) => {
+                client.send(Command::Raw(
+                    format!(
+                        "PRIVMSG {} :/w {} An integer value is required",
+                        config.nickname, admin
+                    ),
+                    vec![],
+                    None,
+                ))?;
+            }
+        }
+    }
 
     Ok(())
 }
 
 fn pause(
     client: &irc::client::IrcClient,
-    mut bot_state: std::sync::MutexGuard<config::BotState>,
-    config: &config::BotConfig,
+    mut bot_state: std::sync::MutexGuard<config::State>,
+    config: &config::Config,
     admin: &str,
     sub_cmd: &str,
 ) -> Result<(), error::Error> {

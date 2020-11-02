@@ -31,12 +31,14 @@ fn main() {
 }
 
 fn run() -> Result<(), lib::error::Error> {
-    let config = config::BotConfig::load().expect("Unable to load config file");
+    let config = config::Config::load().expect("Unable to load config file");
 
     file::create_dirs(&config.channels).expect("Unable to create log directories");
 
     let postgres = {
-        if !config.postgres.is_empty() {
+        if config.postgres.is_empty() {
+            false
+        } else {
             match db::create_tables() {
                 Ok(_) => true,
                 Err(e) => {
@@ -44,8 +46,6 @@ fn run() -> Result<(), lib::error::Error> {
                     false
                 }
             }
-        } else {
-            false
         }
     };
     let mut reactor = IrcReactor::new()?;
@@ -55,7 +55,7 @@ fn run() -> Result<(), lib::error::Error> {
         ..Config::default()
     })?;
     let count = config.channels.iter().count();
-    let bot_state = Arc::new(Mutex::new(config::BotState::new(count, postgres)));
+    let bot_state = Arc::new(Mutex::new(config::State::new(count, postgres)));
     let v = Arc::new(Mutex::new(Vec::new()));
 
     client.send(Command::Raw("PASS".to_owned(), vec![config.oauth.to_owned()], None))?;

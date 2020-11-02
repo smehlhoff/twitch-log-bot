@@ -4,7 +4,7 @@ use std::thread;
 use crate::lib::{config, error, message};
 
 fn connect() -> Result<postgres::Client, error::Error> {
-    let config = config::BotConfig::load()?;
+    let config = config::Config::load()?;
     let db = Client::connect(&config.postgres, NoTls)?;
 
     Ok(db)

@@ -5,14 +5,14 @@ use std::io::{BufWriter, Write};
 use crate::lib::error;
 
 #[derive(Copy, Clone, Debug)]
-pub struct BotState {
+pub struct State {
     pub buffer: usize,
     pub paused: bool,
     pub postgres: bool,
     pub uptime: chrono::DateTime<Utc>,
 }
 
-impl BotState {
+impl State {
     pub fn new(count: usize, postgres: bool) -> Self {
         let buffer = {
             if count <= 10 {
@@ -27,7 +27,7 @@ impl BotState {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct BotConfig {
+pub struct Config {
     pub nickname: String,
     pub oauth: String,
     pub server: String,
@@ -36,7 +36,7 @@ pub struct BotConfig {
     pub channels: Vec<String>,
 }
 
-impl BotConfig {
+impl Config {
     pub fn load() -> Result<Self, error::Error> {
         let file = fs::OpenOptions::new().read(true).open("config.json")?;
         let json: Self = serde_json::from_reader(file)?;
