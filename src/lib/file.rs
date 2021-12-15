@@ -47,7 +47,7 @@ impl Logger {
             };
 
             file.write_fmt(format_args!(
-                "{} - {}[{}] {}: {}\n",
+                "{} {}[{}] {}: {}\n",
                 parsed_msg.timestamp.format("%Y-%m-%d %H:%M:%S"),
                 moderator,
                 parsed_msg.sub_count,

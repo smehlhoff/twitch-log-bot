@@ -7,7 +7,7 @@ use crate::lib::{config, db, error, file, message};
 fn check_prefix(mut channels: Vec<String>) -> Vec<String> {
     for channel in &mut channels {
         if !channel.contains('#') {
-            channel.insert_str(0, "#")
+            channel.insert(0, '#');
         }
     }
 
@@ -57,13 +57,13 @@ pub fn parse_cmd(
             }
             "buffer" => {
                 args.remove(0);
-                buffer(client, bot_state, &config, &parsed_msg.username, args)?;
+                buffer(client, bot_state, &config, &parsed_msg.username, &args)?;
             }
             "pause" | "stop" | "unpause" | "start" => {
                 pause(client, bot_state, &config, &parsed_msg.username, sub_cmd)?;
             }
             "shutdown" | "exit" | "quit" => {
-                panic!(format!("Bot shutdown by {} at {}", &parsed_msg.username, Utc::now()))
+                panic!("Bot shutdown by {} at {}", &parsed_msg.username, Utc::now());
             }
             _ => {}
         }
@@ -144,7 +144,7 @@ fn list(
     config: config::Config,
     admin: &str,
 ) -> Result<(), error::Error> {
-    let count = config.channels.iter().count();
+    let count = config.channels.len();
 
     match count {
         0 => {
@@ -225,7 +225,7 @@ fn buffer(
     mut bot_state: std::sync::MutexGuard<config::State>,
     config: &config::Config,
     admin: &str,
-    args: Vec<String>,
+    args: &[String],
 ) -> Result<(), error::Error> {
     if args.is_empty() {
         client.send(Command::Raw(

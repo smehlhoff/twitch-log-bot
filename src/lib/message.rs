@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use regex::Regex;
 use std::fmt;
 
-use crate::lib::error;
+use crate::lib::{error, message};
 
 #[derive(Clone, Debug)]
 pub enum UserType {
@@ -34,11 +34,11 @@ pub struct Message {
     pub timestamp: chrono::DateTime<Utc>,
 }
 
-const fn check_user_type(user_type: i32) -> Result<UserType, error::Error> {
-    Ok(match user_type {
+const fn check_user_type(user_type: i32) -> message::UserType {
+    match user_type {
         1 => UserType::Moderator,
         _ => UserType::User,
-    })
+    }
 }
 
 impl Message {
@@ -107,7 +107,7 @@ impl Message {
 
         if let Some(data) = RE.captures(&raw_msg.to_string()) {
             let sub_count = data.get(1).map_or("0", |x| x.as_str());
-            let user_type = check_user_type(data["user_type"].parse::<i32>().unwrap_or(0))?;
+            let user_type = check_user_type(data["user_type"].parse::<i32>().unwrap_or(0));
 
             Ok(Self {
                 command: data["command"].to_string(),
@@ -163,7 +163,7 @@ impl Message {
 
                 (
                     data["user_id"].to_string().parse::<i32>().unwrap_or(0),
-                    check_user_type(data["user_type"].parse::<i32>().unwrap_or(0))?,
+                    check_user_type(data["user_type"].parse::<i32>().unwrap_or(0)),
                     data["username"].to_string(),
                     sub_count.to_string().parse::<i32>().unwrap_or(0),
                 )

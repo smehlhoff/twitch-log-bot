@@ -54,7 +54,7 @@ fn run() -> Result<(), lib::error::Error> {
         server: Some(config.server.to_owned()),
         ..Config::default()
     })?;
-    let count = config.channels.iter().count();
+    let count = config.channels.len();
     let bot_state = Arc::new(Mutex::new(config::State::new(count, postgres)));
     let v = Arc::new(Mutex::new(Vec::new()));
 
@@ -83,7 +83,7 @@ fn run() -> Result<(), lib::error::Error> {
         if !parsed_msg.command.is_empty() {
             if parsed_msg.command == "WHISPER" {
                 lib::commands::parse_cmd(client, bot_state, &parsed_msg)
-                    .expect("Unable to save admin message")
+                    .expect("Unable to save admin message");
             } else if !bot_state.paused {
                 file::Logger::save_msg_txt(&parsed_msg, bot_state.buffer)
                     .expect("Unable to save message");
@@ -97,7 +97,7 @@ fn run() -> Result<(), lib::error::Error> {
                             Err(e) => eprintln!("{}", e),
                         }
 
-                        v.clear()
+                        v.clear();
                     };
                 }
             }
