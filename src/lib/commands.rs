@@ -85,7 +85,7 @@ fn join(
     file::create_dirs(&channels)?;
 
     for channel in &channels {
-        if !config.channels.contains(channel) {
+        if !config.channels.contains(channel) && client.send_join(channel).is_ok() {
             v.push(channel.to_string());
             config.channels.push(channel.to_string());
             bot_state.buffer += 10;
@@ -119,7 +119,7 @@ fn part(
     let mut v = Vec::new();
 
     for channel in &channels {
-        if config.channels.contains(channel) && client.send_join(channel).is_ok() {
+        if config.channels.contains(channel) && client.send_part(channel).is_ok() {
             v.push(channel.to_string());
             config.channels.retain(|x| x != channel);
             bot_state.buffer -= 10;
